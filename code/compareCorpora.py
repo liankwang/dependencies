@@ -1,7 +1,8 @@
 import nltk.tree
 import random
+import csv
 from corpusIterator import CorpusIterator_PTB
-from createCounterfactGrammar import createCounterfactGrammar
+from createCounterfactGrammar import CorpusIterator_Counterfact
 from estimateTradeoffHeldout import calculateMemorySurprisalTradeoff
 from estimateDepLength import calculateSentenceDepLength
 
@@ -29,12 +30,18 @@ def loadCorpus(CorpusIterator):
     dev_data = []
 
     for tree, sentence_with_dependencies in corpus_cached["train"].iterator():
+        if sentence_with_dependencies == None:
+            break
+
         train_data.append('SOS')
         for word in sentence_with_dependencies:
             train_data.append(word['word'])
         train_data.append('PAD')
 
     for tree, sentence_with_dependencies in corpus_cached["dev"].iterator():
+        if sentence_with_dependencies == None:
+            break
+
         dev_data.append('SOS')
         for word in sentence_with_dependencies:
             dev_data.append(word['word'])
@@ -52,26 +59,30 @@ def calcILDL(train_data, dev_data, corpus_cached, args):
     #print('average surprisals in dev set:', devSurprisalTable)
 
     # Calculate DL
-    sum = 0
+    dep_sum = 0
     counter = 0
     for tree, sentence_with_dependencies in corpus_cached["dev"].iterator():
-        sum += calculateSentenceDepLength(sentence_with_dependencies)
+        dep_sum += calculateSentenceDepLength(sentence_with_dependencies)
         counter += 1
-    average_dep = sum / counter
+    average_dep = dep_sum / counter
     #print('average dep length:', average_dep) # prints average dependency length for a sentence in the dev set
 
-    return auc, average_dep, surp_table
+    return auc, average_dep, devSurprisalTable
 
 def compareCorpora():
     og_train_data, og_dev_data, og_corpus_cached = loadCorpus(CorpusIterator_PTB)
-    createCounterfactGrammar()
-    cf_train_data, cf_dev_data, cf_corpus_cached = loadCorpus(CorpusIterator_PTB)
+    cf_train_data, cf_dev_data, cf_corpus_cached = loadCorpus(CorpusIterator_Counterfact)
     # Counterfact_CorpusIterator = createCounterfactGrammar()
     # cf_train_data, cf_dev_data = loadCorpus(Counterfact_CorpusIterator)
 
     og_auc, og_dep, og_surp_table = calcILDL(og_train_data, og_train_data, og_corpus_cached, args)
     cf_auc, cf_dep, cf_surp_table = calcILDL(cf_train_data, cf_dev_data, cf_corpus_cached, args)
-    print('og: ', og_auc, og_dep)
-    print('cf: ', cf_auc, cf_dep)
+    print('og: ', og_auc, og_dep, og_surp_table)
+    print('cf: ', cf_auc, cf_dep, cf_surp_table)
+
+    with open('../results/results.csv', 'w', newline='') as f:
+        writer = csv.writer(f, delimiter=',')
+        writer.writerows([[og_auc, og_dep] + og_surp_table, [cf_auc, cf_dep] + cf_surp_table])
+
 
 compareCorpora()

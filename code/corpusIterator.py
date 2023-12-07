@@ -51,7 +51,7 @@ def getPTB(partition):  # where partition indicates what sections of the data to
         sections = range(21, 22)  # 19, 20, 21
     elif partition == "test":
         sections = range(22, 23)  # 22, 23, 24
-    for sec in range(0,2):  ## MODIFIED FOR FIDDLING PURPOSES; RESTORE TO "for sec in sections:"
+    for sec in sections:  ## MODIFIED FOR FIDDLING PURPOSES; RESTORE TO "for sec in sections:"
         addTrees(sec, trees)
     return trees
 
@@ -118,7 +118,6 @@ class CorpusIterator_PTB():
     # processes sentence in conllu format into usable data structure
     def processSentence(self, sentenceAndTree):
         tree, sentence = sentenceAndTree  # tree = ptb tree; sentence = conllu representation
-
         # prelims:
         # map(function, iterable) applies the function to every item of the iterable; returns list of results
         # lambda defines func(x) that is defined by x.split("\t")

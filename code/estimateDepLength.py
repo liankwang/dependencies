@@ -2,13 +2,13 @@
 # input: conllu-parsed sentence, as a list of dicts
 # return: total dependency length of the sentence (int)
 def calculateSentenceDepLength(sentence):
-    sum = 0
+    dep_sum = 0
     for word in sentence:
         if word['head'] == 0:
             continue
-        sum += abs(word['index'] - word['head'])
+        dep_sum += abs(word['index'] - word['head'])
         # print("from " + word['word'] + " to " + sentence[word['head'] - 1]['word'] + ": " + str(abs(word['index'] - word['head'])))
-    return sum
+    return dep_sum
 
 # total dep length is a straightforward operationalization of dependency locality
 
@@ -22,3 +22,7 @@ def calculateAveDepLength(sentences):
         sum += calculateSentenceDepLength(sentence[1])
     average = sum / len(sentences)
     return average
+
+
+ls = [1, 2]
+print(ls + [3])
